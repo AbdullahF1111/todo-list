@@ -6,7 +6,24 @@ export class Todos {
          this.projects.push(project);
     }
      deleteProject(id) {
-         this.projects.splice(this.projects.findIndex(project => project.id === id), 1);
+        const index = this.projects.findIndex((project) => project.id === id);
+
+        if (index === -1) return;
+
+
+        else if (this.isDefaultProject(this.projects[index]) ) {
+            throw new Error("Cannot delete the default project.");
+        }
+
+        this.projects.splice(index, 1);
+    }
+
+    isDefaultProject(project) {
+        return project === this.projects[0];
+    }
+
+    getProjectById(id) {
+        return this.projects.find(project => project.id === id);
     }
 
 }

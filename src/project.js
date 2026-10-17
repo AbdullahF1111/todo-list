@@ -19,4 +19,10 @@ export class Project {
         this.tasks.splice(index, 1);
     }
 
+    getTaskById(id) {
+        return this.tasks.find((task) => task.id === id);
+    }
+
+    
+
 }

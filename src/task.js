@@ -20,9 +20,10 @@ export class Task {
     setPriority(priority) {
         if (!validPriorities.includes(priority)) {
             throw new Error(`Invalid priority: ${priority}. Valid priorities are: ${validPriorities.join(", ")}`);
-            return;
         }
         this.priority = priority;
+        return priority;
+        
     }
     
 

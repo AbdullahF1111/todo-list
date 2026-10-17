@@ -1,19 +1,28 @@
-import "./style.css";
+import { Todos } from "./todos.js";
 import { Project } from "./project.js";
-import { Task } from "./task.js";
-const project = new Project("Default");
-const a=new Task("A", "", "2026-10-21", "low")
-project.addTask(a);
-project.addTask(new Task("B", "", "2026-10-22", "urgent"));
-console.log(project);                  // كائن قابل للتوسيع في الـ Console
-console.log("project:", project);      // فاصلة بدل +
-console.log(JSON.stringify(project, null, 2));   // نص منسّق
-console.table(project.tasks);          // جدول للمهام
 
+const todos = new Todos();
+const def = new Project("Default");
+const work = new Project("Work");
+todos.addProject(def);
+todos.addProject(work);
 
-project.deleteTask(a.id);
-console.log(project.tasks.length);
-console.log(project);                  // كائن قابل للتوسيع في الـ Console
-console.log("project:", project);      // فاصلة بدل +
-console.log(JSON.stringify(project, null, 2));   // نص منسّق
-console.table(project.tasks);    // خمّن: كم؟ وأي مهمة اختفت؟
+// الحالة 1: حذف الافتراضي (يجب أن يفشل)
+try {
+  todos.deleteProject(def.id);
+  console.log("BAD: the default was deleted");
+} catch (error) {
+  console.log("OK, rejected:", error.message);
+}
+
+// الحالة 2: حذف Work (يجب أن ينجح)
+todos.deleteProject(work.id);
+
+// الحالة 3: id غير موجود
+todos.deleteProject("not-found");
+
+// الحالة 4: قائمة فارغة
+new Todos().deleteProject("x");
+
+// النتيجة النهائية
+console.log(todos.projects.map((p) => p.title));
