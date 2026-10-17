@@ -1,10 +1,4 @@
-const createId = () => {
-    if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') {
-        return globalThis.crypto.randomUUID();
-    }
-
-    return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-};
+import { createId } from "./id.js";
 
 export class Project {
 
@@ -14,11 +8,15 @@ export class Project {
         this.id = createId();
         this.title = title;
     }
-     addTask(task) {
-         this.tasks.push(task);
+
+    addTask(task) {
+        this.tasks.push(task);
     }
-     deleteTask(id) {
-         this.tasks.splice(this.tasks.findIndex(task => task.id === id), 1);
+
+    deleteTask(id) {
+        const index = this.tasks.findIndex((task) => task.id === id);
+        if (index === -1) return;
+        this.tasks.splice(index, 1);
     }
 
 }

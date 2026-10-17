@@ -1,10 +1,6 @@
-const createId = () => {
-    if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') {
-        return globalThis.crypto.randomUUID();
-    }
+import { createId } from "./id.js";
 
-    return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-};
+const validPriorities = ["low", "medium", "high"];
 
 export class Task {
 
@@ -13,7 +9,7 @@ export class Task {
         this.title = title;
         this.desc = desc;
         this.duedate = duedate;
-        this.priority = priority;
+        this.priority = this.setPriority(priority);
         this.completed = false;
     }
 
@@ -21,6 +17,13 @@ export class Task {
         this.completed = !this.completed;
     }
 
+    setPriority(priority) {
+        if (!validPriorities.includes(priority)) {
+            throw new Error(`Invalid priority: ${priority}. Valid priorities are: ${validPriorities.join(", ")}`);
+            return;
+        }
+        this.priority = priority;
+    }
     
 
 }
