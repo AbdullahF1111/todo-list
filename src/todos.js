@@ -19,6 +19,7 @@ export class Todos {
     }
 
     isDefaultProject(project) {
+        
         return project === this.projects[0];
     }
 
