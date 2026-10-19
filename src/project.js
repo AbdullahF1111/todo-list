@@ -1,12 +1,24 @@
 import { createId } from "./id.js";
 
+function validateTitle(title) {
+    if (typeof title !== "string" || title.trim() === "") {
+        throw new Error("Title cannot be empty.");
+    }
+}
+
 export class Project {
 
     tasks = [];
 
     constructor(title) {
+        validateTitle(title);
         this.id = createId();
-        this.title = title;
+        this.title = title.trim();
+    }
+
+    edit(title) {
+        validateTitle(title);
+        this.title = title.trim();
     }
 
     addTask(task) {
@@ -22,7 +34,5 @@ export class Project {
     getTaskById(id) {
         return this.tasks.find((task) => task.id === id);
     }
-
-    
 
 }
