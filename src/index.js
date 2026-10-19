@@ -1,13 +1,14 @@
 import { Todos } from "./todos.js";
 import { Project } from "./project.js";
-
+import { renderProjects } from "./dom.js";
 const todos = new Todos();
+const d=new Project("Default")
 function start(todos) {
     if (todos.projects.length === 0) {
-        todos.addProject(new Project("Default"));
+        todos.addProject(d);
     }
 }
-
 start(todos);
-start(todos);
-console.log(todos.projects.length);   // خمّن: كم؟
+todos.addProject(new Project("Work"));
+renderProjects(todos);
+renderProjects(todos);   // مرتين عمداً
