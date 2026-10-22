@@ -5,7 +5,8 @@ import { Task } from "./task.js";
 import { renderProjects, renderTasks } from "./dom.js";
 
 const todos = new Todos();
-let currentProjectId = null;  
+let currentProjectId = null;
+let editingTaskId = null;   // null يعني: نموذج إضافة 
 const addTaskBtn = document.getElementById("add-task-btn");
 const taskDialog = document.getElementById("task-dialog");
 const taskForm = document.getElementById("task-form");
@@ -30,8 +31,6 @@ start(todos);
 
 // 2. بيانات اختبار مؤقتة (احذفها لاحقاً)
 const work = new Project("Work");
-work.addTask(new Task("A", "", "2026-10-21", "low"));
-work.addTask(new Task("B", "x", "2026-10-22", "high"));
 todos.addProject(work);
 
 // 3. مستمع واحد على الحاوية الثابتة
@@ -69,34 +68,68 @@ render();
 addTaskBtn.addEventListener("click", () => {
     taskForm.reset();            // clear old values on open
     taskError.hidden = true;     // clear old error on open
+    editingTaskId = null
     taskDialog.showModal();
 });
+
 cancelTaskBtn.addEventListener("click", () => taskDialog.close());
 
 taskForm.addEventListener("submit", (event) => {
-    event.preventDefault();
+    event.preventDefault();                       // أول سطر دائماً
 
     const project = todos.getProjectById(currentProjectId);
     if (!project) return;
 
     const data = new FormData(taskForm);
-    let task;
+    const title = data.get("title");
+    const desc = data.get("desc");
+    const duedate = data.get("duedate");
+    const priority = data.get("priority");
+
     try {
-        task = new Task(
-            data.get("title"),
-            data.get("desc"),
-            data.get("duedate"),
-            data.get("priority")
-        );
+        if (editingTaskId) {
+            const task = project.getTaskById(editingTaskId);
+            if (!task) return;
+            task.edit(title, desc, duedate, priority);       // نفس المهمة، دون حذف أو إضافة
+        } else {
+            project.addTask(new Task(title, desc, duedate, priority));
+        }
     } catch (error) {
         taskError.textContent = error.message;
         taskError.hidden = false;
-        return;                  // stay open, nothing was changed
+        return;                                   // يبقى مفتوحاً، ولم يتغير شيء
     }
 
-    project.addTask(task);       // 1. change the data
-    taskDialog.close();          // 2. close only after success
-    render();                    // 3. redraw from the data
+    taskDialog.close();                           // بعد النجاح فقط
+    render();
+});
+
+document.getElementById("tasks").addEventListener("click", (event) => {
+    const taskElement = event.target.closest(".task");
+    if (!taskElement) return;
+
+    const project = todos.getProjectById(currentProjectId);
+    if (!project) return;
+    const taskId = taskElement.dataset.taskId;
+
+    if (event.target.matches(".delete-task")) {
+        project.deleteTask(taskId);       // 1. غيّر البيانات
+        render();                         // 2. أعد الرسم
+    }
+
+    if (event.target.matches(".edit-task")) {
+        const task = project.getTaskById(taskId);
+        if (!task) return;
+
+        editingTaskId = taskId;                 // ← الإضافة: نحن في وضع تعديل
+        taskError.hidden = true;                // ← امسح خطأً قديماً
+
+        taskForm.title.value = task.title;
+        taskForm.desc.value = task.desc;
+        taskForm.duedate.value = task.duedate;
+        taskForm.priority.value = task.priority;
+        taskDialog.showModal();
+    }
 });
 
 
