@@ -1,15 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ToDo List</title>
 </head>
+
 <body>
-  <div id="projects"></div>
-  <div id="tasks">
-    <input type="text" id="taskInput" placeholder="Add a new task">
-    <label for="dueDateInput">Due Date:</label>
-  </div>
+  <aside>
+    <h1>Projects</h1>
+    <div id="projects"></div>
+  </aside>
+
+  <main>
+    <button id="add-task-btn" type="button">Add task</button>
+    <div id="tasks"></div>
+  </main>
+
+  <dialog id="task-dialog">
+    <form id="task-form">
+      <h2>New task</h2>
+
+      <label for="new-task-title">Title</label>
+      <input id="new-task-title" name="title" type="text" required>
+
+      <label for="new-task-desc">Description</label>
+      <textarea id="new-task-desc" name="desc"></textarea>
+
+      <label for="new-task-duedate">Due date</label>
+      <input id="new-task-duedate" name="duedate" type="date" required>
+
+      <label for="new-task-priority">Priority</label>
+      <select id="new-task-priority" name="priority">
+        <option value="low">Low</option>
+        <option value="medium" selected>Medium</option>
+        <option value="high">High</option>
+      </select>
+
+      <p id="task-error" hidden></p>
+
+      <button type="submit">Add</button>
+      <button type="button" id="cancel-task-btn">Cancel</button>
+    </form>
+  </dialog>
 </body>
+
 </html>

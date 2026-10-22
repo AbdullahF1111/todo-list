@@ -5,7 +5,12 @@ import { Task } from "./task.js";
 import { renderProjects, renderTasks } from "./dom.js";
 
 const todos = new Todos();
-let currentProjectId = null;           // الحالة: المشروع المفتوح الآن
+let currentProjectId = null;  
+const addTaskBtn = document.getElementById("add-task-btn");
+const taskDialog = document.getElementById("task-dialog");
+const taskForm = document.getElementById("task-form");
+const taskError = document.getElementById("task-error");
+const cancelTaskBtn = document.getElementById("cancel-task-btn");         // الحالة: المشروع المفتوح الآن
 
 function start(todos) {
     if (todos.projects.length === 0) {
@@ -41,6 +46,57 @@ document.getElementById("projects").addEventListener("click", (event) => {
     render();
 });
 
+document.getElementById("tasks").addEventListener("change", (event) => {
+    if (!event.target.matches('input[type="checkbox"]')) return;   // المربع فقط
+
+    const taskElement = event.target.closest(".task");
+    if (!taskElement) return;
+
+    const project = todos.getProjectById(currentProjectId);
+    if (!project) return;
+
+    const task = project.getTaskById(taskElement.dataset.taskId);
+    if (!task) return;
+
+    task.toggleCompleted();
+    render();
+});
+
 // 4. عند فتح الصفحة: يفتح الافتراضي
 currentProjectId = todos.projects[0].id;
 render();
+
+addTaskBtn.addEventListener("click", () => {
+    taskForm.reset();            // clear old values on open
+    taskError.hidden = true;     // clear old error on open
+    taskDialog.showModal();
+});
+cancelTaskBtn.addEventListener("click", () => taskDialog.close());
+
+taskForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const project = todos.getProjectById(currentProjectId);
+    if (!project) return;
+
+    const data = new FormData(taskForm);
+    let task;
+    try {
+        task = new Task(
+            data.get("title"),
+            data.get("desc"),
+            data.get("duedate"),
+            data.get("priority")
+        );
+    } catch (error) {
+        taskError.textContent = error.message;
+        taskError.hidden = false;
+        return;                  // stay open, nothing was changed
+    }
+
+    project.addTask(task);       // 1. change the data
+    taskDialog.close();          // 2. close only after success
+    render();                    // 3. redraw from the data
+});
+
+
