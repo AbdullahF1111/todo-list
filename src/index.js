@@ -3,6 +3,7 @@ import { Todos } from "./todos.js";
 import { Project } from "./project.js";
 import { Task } from "./task.js";
 import { renderProjects, renderTasks } from "./dom.js";
+import { saveProjects, loadProjects } from "./storage.js";
 
 const todos = new Todos();
 let currentProjectId = null;
@@ -11,7 +12,12 @@ const addTaskBtn = document.getElementById("add-task-btn");
 const taskDialog = document.getElementById("task-dialog");
 const taskForm = document.getElementById("task-form");
 const taskError = document.getElementById("task-error");
-const cancelTaskBtn = document.getElementById("cancel-task-btn");         // الحالة: المشروع المفتوح الآن
+const cancelTaskBtn = document.getElementById("cancel-task-btn");
+
+loadProjects().forEach((project) => todos.addProject(project));
+start(todos);
+currentProjectId = todos.projects[0].id;
+render();
 
 function start(todos) {
     if (todos.projects.length === 0) {
@@ -26,22 +32,29 @@ function render() {
     renderTasks(project);
 }
 
-// 1. الافتراضي أولاً، قبل أي مشروع آخر
-start(todos);
-
-// 2. بيانات اختبار مؤقتة (احذفها لاحقاً)
-const work = new Project("Work");
-todos.addProject(work);
 
 // 3. مستمع واحد على الحاوية الثابتة
 document.getElementById("projects").addEventListener("click", (event) => {
     const projectElement = event.target.closest(".project");
-    if (!projectElement) return;                         // نقرة على فراغ
+    if (!projectElement) return;                       // نقرة على فراغ
 
-    const project = todos.getProjectById(projectElement.dataset.projectId);
-    if (!project) return;                                // id لا يطابق شيئاً
+    const id = projectElement.dataset.projectId;
+    const project = todos.getProjectById(id);
+    if (!project) return;
 
-    currentProjectId = project.id;
+    if (event.target.matches(".delete-project")) {
+        if (!confirm(`Delete the project "${project.title}" and its tasks?`)) return;
+
+        todos.deleteProject(id);
+        if (id === currentProjectId) {
+            currentProjectId = todos.projects[0].id;
+        }
+        saveProjects(todos);
+        render();
+        return;                                        // لا تكمل إلى الاختيار
+    }
+
+    currentProjectId = id;
     render();
 });
 
@@ -58,12 +71,9 @@ document.getElementById("tasks").addEventListener("change", (event) => {
     if (!task) return;
 
     task.toggleCompleted();
+    saveProjects(todos);
     render();
 });
-
-// 4. عند فتح الصفحة: يفتح الافتراضي
-currentProjectId = todos.projects[0].id;
-render();
 
 addTaskBtn.addEventListener("click", () => {
     taskForm.reset();            // clear old values on open
@@ -100,7 +110,9 @@ taskForm.addEventListener("submit", (event) => {
         return;                                   // يبقى مفتوحاً، ولم يتغير شيء
     }
 
-    taskDialog.close();                           // بعد النجاح فقط
+    taskDialog.close();
+    saveProjects(todos);
+    // بعد النجاح فقط
     render();
 });
 
@@ -113,7 +125,8 @@ document.getElementById("tasks").addEventListener("click", (event) => {
     const taskId = taskElement.dataset.taskId;
 
     if (event.target.matches(".delete-task")) {
-        project.deleteTask(taskId);       // 1. غيّر البيانات
+        project.deleteTask(taskId);
+        saveProjects(todos);     // 1. غيّر البيانات
         render();                         // 2. أعد الرسم
     }
 
@@ -130,6 +143,21 @@ document.getElementById("tasks").addEventListener("click", (event) => {
         taskForm.priority.value = task.priority;
         taskDialog.showModal();
     }
+});
+
+document.getElementById("add-project-btn").addEventListener("click", () => {
+    const name = prompt("Enter project name:");
+    if (name === null) return;                 // ضغط Cancel
+    try {
+        const newProject = new Project(name);
+        todos.addProject(newProject);
+        currentProjectId = newProject.id;
+    } catch (error) {
+        alert(error.message);
+        return;
+    }
+    saveProjects(todos);
+    render();
 });
 
 

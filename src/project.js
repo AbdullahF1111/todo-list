@@ -1,3 +1,4 @@
+import { Task } from "./task.js";
 import { createId } from "./id.js";
 
 function validateTitle(title) {
@@ -15,7 +16,19 @@ export class Project {
         this.id = createId();
         this.title = title.trim();
     }
-
+    static fromJSON(data) {
+        const project = new Project(data.title);
+        project.id = data.id;
+        // داخل Project.fromJSON
+        data.tasks.forEach((t) => {
+            try {
+                project.addTask(Task.fromJSON(t));
+            } catch (error) {
+                console.warn("Skipped a corrupted task", t, error);
+            }
+        });
+        return project;
+    }
     edit(title) {
         validateTitle(title);
         this.title = title.trim();

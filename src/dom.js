@@ -6,7 +6,17 @@ export function renderProjects(todos, currentProjectId) {
     todos.projects.forEach((project) => {
         const projectElement = document.createElement("div");
         projectElement.classList.add("project");
-        projectElement.textContent = project.title;
+        const title = document.createElement("span");
+        title.textContent = project.title;
+        projectElement.append(title);
+
+        if (!todos.isDefaultProject(project)) {
+            const deleteBtn = document.createElement("button");
+            deleteBtn.type = "button";
+            deleteBtn.classList.add("delete-project");
+            deleteBtn.textContent = "Delete";
+            projectElement.append(deleteBtn);
+        }
         projectElement.dataset.projectId = project.id;
 
         if (todos.isDefaultProject(project)) {
@@ -39,42 +49,45 @@ export function renderTasks(project) {
         return;
     }
 
+
+
     project.tasks.forEach((task) => {
-    const taskElement = document.createElement("div");
-    taskElement.classList.add("task", `priority-${task.priority}`);
-    taskElement.dataset.taskId = task.id;
+        const taskElement = document.createElement("div");
+        taskElement.classList.add("task", `priority-${task.priority}`);
+        taskElement.dataset.taskId = task.id;
 
-    const title = document.createElement("h3");
-    title.textContent = task.title;
+        const title = document.createElement("h3");
+        title.textContent = task.title;
 
-    const desc = document.createElement("p");
-    desc.textContent = task.desc;
+        const desc = document.createElement("p");
+        desc.textContent = task.desc;
 
-    const dueDate = document.createElement("p");
-    dueDate.textContent = task.duedate;
+        const dueDate = document.createElement("p");
+        dueDate.textContent = task.duedate;
 
-    const priority = document.createElement("p");
-    priority.textContent = task.priority;
+        const priority = document.createElement("p");
+        priority.textContent = task.priority;
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.id = `task-${task.id}`;
-    checkbox.checked = task.completed;
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.id = `task-${task.id}`;
+        checkbox.checked = task.completed;
 
-    const label = document.createElement("label");
-    label.htmlFor = `task-${task.id}`;
-    label.textContent = task.completed ? "Completed" : "Not Completed";
+        const label = document.createElement("label");
+        label.htmlFor = `task-${task.id}`;
+        label.textContent = task.completed ? "Completed" : "Not Completed";
 
-    const editBtn = document.createElement("button");
-    editBtn.type = "button";
-    editBtn.classList.add("edit-task");
-    editBtn.textContent = "Edit";
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.classList.add("edit-task");
+        editBtn.textContent = "Edit";
 
-    const deleteBtn = document.createElement("button");
-    deleteBtn.type = "button";
-    deleteBtn.classList.add("delete-task");
-    deleteBtn.textContent = "Delete";
-    
-    taskElement.append(title, desc, dueDate, priority, checkbox, label, editBtn, deleteBtn);
-    tasksContainer.appendChild(taskElement);
-})};
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.classList.add("delete-task");
+        deleteBtn.textContent = "Delete";
+
+        taskElement.append(title, desc, dueDate, priority, checkbox, label, editBtn, deleteBtn);
+        tasksContainer.appendChild(taskElement);
+    })
+};
