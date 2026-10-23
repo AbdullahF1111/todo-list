@@ -1,4 +1,3 @@
-
 export function renderProjects(todos, currentProjectId) {
     const projectsContainer = document.getElementById("projects");
     projectsContainer.textContent = "";
@@ -6,22 +5,23 @@ export function renderProjects(todos, currentProjectId) {
     todos.projects.forEach((project) => {
         const projectElement = document.createElement("div");
         projectElement.classList.add("project");
+        projectElement.dataset.projectId = project.id;
+
         const title = document.createElement("span");
         title.textContent = project.title;
         projectElement.append(title);
 
-        if (!todos.isDefaultProject(project)) {
+        if (todos.isDefaultProject(project)) {
+            projectElement.classList.add("default-project");
+        } else {
+            // The default project cannot be deleted, so it gets no delete button
             const deleteBtn = document.createElement("button");
             deleteBtn.type = "button";
             deleteBtn.classList.add("delete-project");
             deleteBtn.textContent = "Delete";
             projectElement.append(deleteBtn);
         }
-        projectElement.dataset.projectId = project.id;
 
-        if (todos.isDefaultProject(project)) {
-            projectElement.classList.add("default-project");
-        }
         if (project.id === currentProjectId) {
             projectElement.classList.add("selected");
         }
@@ -29,18 +29,17 @@ export function renderProjects(todos, currentProjectId) {
         projectsContainer.appendChild(projectElement);
     });
 }
-export function renderTasks(project) {
+
+export function renderTasks(project, expandedIds = new Set()) {
     const tasksContainer = document.getElementById("tasks");
     tasksContainer.textContent = "";
 
-    if (!project) return;   // لا مشروع مفتوح، فلا شيء يُرسم
+    if (!project) return;   // no open project, nothing to draw
 
-    // عنوان المشروع (يخص project وليس task، فمكانه خارج الحلقة)
     const heading = document.createElement("h2");
     heading.textContent = project.title;
     tasksContainer.appendChild(heading);
 
-    // مشروع بلا مهام
     if (project.tasks.length === 0) {
         const empty = document.createElement("p");
         empty.classList.add("empty");
@@ -49,29 +48,41 @@ export function renderTasks(project) {
         return;
     }
 
-
-
     project.tasks.forEach((task) => {
         const taskElement = document.createElement("div");
         taskElement.classList.add("task", `priority-${task.priority}`);
+        taskElement.classList.toggle("expanded", expandedIds.has(task.id));
+        taskElement.classList.toggle("completed", task.completed);
+        // Which task this element represents. Read by index.js on click to find the Task object.
         taskElement.dataset.taskId = task.id;
 
-        const title = document.createElement("h3");
-        title.textContent = task.title;
-
-        const desc = document.createElement("p");
-        desc.textContent = task.desc;
-
-        const dueDate = document.createElement("p");
-        dueDate.textContent = task.duedate;
-
-        const priority = document.createElement("p");
-        priority.textContent = task.priority;
+        // ---- Summary: always visible (checkbox, title, due date) ----
+        const summary = document.createElement("div");
+        summary.classList.add("task-summary");
 
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.id = `task-${task.id}`;
         checkbox.checked = task.completed;
+
+        const title = document.createElement("h3");
+        title.textContent = task.title;
+
+        const dueDate = document.createElement("span");
+        dueDate.classList.add("task-date");
+        dueDate.textContent = task.duedate;
+
+        summary.append(checkbox, title, dueDate);
+
+        // ---- Details: visible only when the task is expanded ----
+        const details = document.createElement("div");
+        details.classList.add("task-details");
+
+        const desc = document.createElement("p");
+        desc.textContent = task.desc;
+
+        const priority = document.createElement("p");
+        priority.textContent = `Priority: ${task.priority}`;
 
         const label = document.createElement("label");
         label.htmlFor = `task-${task.id}`;
@@ -87,7 +98,13 @@ export function renderTasks(project) {
         deleteBtn.classList.add("delete-task");
         deleteBtn.textContent = "Delete";
 
-        taskElement.append(title, desc, dueDate, priority, checkbox, label, editBtn, deleteBtn);
+        const actions = document.createElement("div");
+        actions.classList.add("task-actions");
+        actions.append(editBtn, deleteBtn);
+
+        details.append(desc, priority, label, actions);
+
+        taskElement.append(summary, details);
         tasksContainer.appendChild(taskElement);
-    })
-};
+    });
+}
